@@ -3,7 +3,6 @@
 // @namespace    http://github.com/snlmbe
 // @version      1.0
 // @description  Ana script, komut paneli ve dinamik komut yükleme
-// @author       
 // @match        https://www.roblox.com/*
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
@@ -12,7 +11,7 @@
 (function() {
     'use strict';
 
-    // 1) UI Kurulumu
+    // UI Oluştur
     GM_addStyle(`
         .cmd-btn { 
             position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; 
@@ -58,8 +57,8 @@
         buildCommandList('');
     });
 
-    // 2) Komutları Yükleme: GitHub API ile commands klasöründeki tüm dosyaları çekiyoruz
-    const GITHUB_API_URL = 'https://api.github.com/repos/snlmbe/roblox-cmd-panel/contents/commands';
+    // GitHub API'den src/commands klasörünü listele
+    const GITHUB_API_URL = 'https://api.github.com/repos/snlmbe/roblox-cmd-panel/contents/src/commands';
 
     GM_xmlhttpRequest({
         method: 'GET',
@@ -69,12 +68,16 @@
                 const files = JSON.parse(response.responseText);
                 files.forEach(file => {
                     if (file.name.endsWith('.js')) {
+                        // Her .js dosyasını alıp enjekte et
                         fetchAndInject(file.download_url);
                     }
                 });
             } else {
-                console.error('Commands klasörü bulunamadı veya hata oluştu', response);
+                console.error('Commands klasörü okunamadı', response);
             }
+        },
+        onerror: function(err) {
+            console.error('Commands çekilemedi', err);
         }
     });
 
@@ -88,11 +91,14 @@
                     script.textContent = response.responseText;
                     document.head.appendChild(script);
                 }
+            },
+            onerror: function(err) {
+                console.error('Komut dosyası alınamadı:', err);
             }
         });
     }
 
-    // 3) Komut Arama ve Listeleme
+    // Komut arama ve listeleme
     let searchTimeout;
     const input = panel.querySelector('.cmd-input');
     input.addEventListener('input', function(e) {
@@ -106,7 +112,6 @@
         const list = panel.querySelector('.cmd-list');
         list.innerHTML = '';
 
-        // Komutlar window.commands içinde toplanmalı
         if (!window.commands) return;
 
         Object.keys(window.commands).forEach(cmdName => {

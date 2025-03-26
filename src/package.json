@@ -1,1 +1,10 @@
-
+{
+    "name": "roblox-cmd",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "node build.js"
+    },
+    "devDependencies": {
+        "esbuild": "^0.15.0"
+    }
+}
